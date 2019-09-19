@@ -2,43 +2,55 @@ import React, { Component } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { ListItem } from "./components/ListItem";
-
-const Wrapper = styled.div``;
+import { Input } from "./components/Input";
+import { UsersApi } from "./services/API";
 
 const InnerWrapper = styled.div`
-  text-align:center;
+  text-align: center;
   margin: 0 auto;
   display: flex;
+  align-items: center;
   flex-direction: column;
-  width: 50vw;
+  width: 500px;
 `;
 
 const StyledList = styled.ol`
   width: 100%;
   color: #777;
+  margin-left: 130px;
 `;
-const ApiEndPoint = "https://jsonplaceholder.typicode.com/users";
-axios
-  .get(ApiEndPoint)
-  .then(res => console.log(res.data))
-  .catch(err => console.log(err));
 
 class App extends Component {
+  _isMounted = false;
   state = {
     persons: [],
     inputValue: ""
   };
+
   componentDidMount() {
-    axios.get(`https://jsonplaceholder.typicode.com/users`).then(res => {
-      const persons = res.data;
-      this.setState({ persons });
-    });
+    this._isMounted = true;
+
+    axios
+      .get(UsersApi)
+      .then(res => {
+        if(this._isMounted){
+          const persons = res.data;
+          this.setState({ persons });
+        }
+        
+      })
+      .catch(error => console.log(error));
   }
+  componentWillUpdate(){
+    this._isMounted=false;
+  }
+
   handleChange = event => {
     this.setState({ inputValue: event.target.value }, () =>
       this.filterPersons(this.state.inputValue)
     );
   };
+
   filterPersons = inputValue => {
     let filteredPersons = this.state.persons;
     filteredPersons = filteredPersons.filter(person => {
@@ -49,20 +61,21 @@ class App extends Component {
       filteredPersons
     });
   };
+
   renderPersonsList = personsArray => {
     return personsArray.map(person => (
-      <ListItem name={person.name} username={person.username} />
+      <ListItem name={person.name} username={person.username} key={person.name}/>
     ));
   };
-
+// props types dodac i testy 
   render() {
     const { inputValue, persons, filteredPersons } = this.state;
     return (
-      <Wrapper>
+      <>
         <InnerWrapper>
           <h1>User List</h1>
-          <input
-            placeholder="Search by user name"
+          <Input
+            placeholder="Search by user name..."
             value={inputValue}
             onChange={this.handleChange}
           />
@@ -72,7 +85,7 @@ class App extends Component {
               : this.renderPersonsList(persons)}
           </StyledList>
         </InnerWrapper>
-      </Wrapper>
+      </>
     );
   }
 }
