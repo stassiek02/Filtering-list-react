@@ -17,45 +17,46 @@ const InnerWrapper = styled.div`
 const StyledList = styled.ol`
   width: 100%;
   color: #777;
+  margin-top:40px;
   margin-left: 130px;
 `;
 
 class App extends Component {
   _isMounted = false;
   state = {
-    persons: [],
-    inputValue: ""
+    personsData: [],
+    filterValue: "",
   };
 
   componentDidMount() {
     this._isMounted = true;
-
+    
     axios
       .get(UsersApi)
       .then(res => {
-        if(this._isMounted){
-          const persons = res.data;
-          this.setState({ persons });
+        if (this._isMounted) {
+          const personsData = res.data;
+          this.setState({ personsData });
         }
-        
       })
       .catch(error => console.log(error));
   }
-  componentWillUpdate(){
-    this._isMounted=false;
+  componentDidUpdate() {
+    this._isMounted = false;
   }
 
   handleChange = event => {
-    this.setState({ inputValue: event.target.value }, () =>
-      this.filterPersons(this.state.inputValue)
+    this.setState({ filterValue: event.target.value }, () =>
+      this.filterPersons(this.state.filterValue)
     );
   };
 
-  filterPersons = inputValue => {
-    let filteredPersons = this.state.persons;
+  filterPersons = filterValue => {
+    
+    let filteredPersons = this.state.personsData;
     filteredPersons = filteredPersons.filter(person => {
       let personName = person.name.toLowerCase();
-      return personName.indexOf(inputValue.toLowerCase()) !== -1;
+      return personName.indexOf(filterValue.toLowerCase()) !== -1;
     });
     this.setState({
       filteredPersons
@@ -64,25 +65,28 @@ class App extends Component {
 
   renderPersonsList = personsArray => {
     return personsArray.map(person => (
-      <ListItem name={person.name} username={person.username} key={person.name}/>
+      <ListItem
+        name={person.name}
+        username={person.username}
+        key={person.name}
+      />
     ));
   };
-// props types dodac i testy 
   render() {
-    const { inputValue, persons, filteredPersons } = this.state;
+    const { filterValue, personsData, filteredPersons } = this.state;
     return (
       <>
         <InnerWrapper>
           <h1>User List</h1>
           <Input
             placeholder="Search by user name..."
-            value={inputValue}
+            value={filterValue}
             onChange={this.handleChange}
           />
           <StyledList>
             {filteredPersons
               ? this.renderPersonsList(filteredPersons)
-              : this.renderPersonsList(persons)}
+              : this.renderPersonsList(personsData)}
           </StyledList>
         </InnerWrapper>
       </>
